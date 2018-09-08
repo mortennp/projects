@@ -6,6 +6,7 @@
 # modification: 2018/08/03
 ########################################################################
 import RPi.GPIO as GPIO
+from time import sleep
 
 ledPin = 12    # define the ledPin
 sensorPin = 11    # define the sensorPin
@@ -16,16 +17,23 @@ def setup():
 	GPIO.setup(ledPin, GPIO.OUT)   # Set ledPin's mode is output
 	GPIO.setup(sensorPin, GPIO.IN)    # Set sensorPin's mode is input
 
+def irsense_on_callback(channel):
+	if GPIO.input(sensorPin)==GPIO.HIGH:
+		print('Rise!')
+		GPIO.output(ledPin,GPIO.HIGH)
+	else:
+		print('Fall')
+		GPIO.output(ledPin,GPIO.LOW)
+
 def loop():
-	while True:
-		if GPIO.input(sensorPin)==GPIO.HIGH:
-			GPIO.output(ledPin,GPIO.HIGH)
-			#print ('led on ...')
-		else :
-			GPIO.output(ledPin,GPIO.LOW)
-			#print ('led off ...')
+	GPIO.output(ledPin,GPIO.LOW)
+	sleep(5)
+	GPIO.add_event_detect(sensorPin, GPIO.BOTH)
+	GPIO.add_event_callback(sensorPin, callback=irsense_on_callback)
+	sleep(100000)
 
 def destroy():
+	GPIO.remove_event_detect(sensorPin)
 	GPIO.cleanup()                     # Release resource
 
 if __name__ == '__main__':     # Program start from here
