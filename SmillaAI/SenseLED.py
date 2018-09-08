@@ -20,10 +20,10 @@ def loop():
 	while True:
 		if GPIO.input(sensorPin)==GPIO.HIGH:
 			GPIO.output(ledPin,GPIO.HIGH)
-			print ('led on ...')
+			#print ('led on ...')
 		else :
 			GPIO.output(ledPin,GPIO.LOW)
-			print ('led off ...')
+			#print ('led off ...')
 
 def destroy():
 	GPIO.cleanup()                     # Release resource
