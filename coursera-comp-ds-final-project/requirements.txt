@@ -13,6 +13,7 @@ Seaborn
 Bokeh
 holoviews[extras]
 hvplot
+tables
 h5py
 joblib
 scikit-learn
