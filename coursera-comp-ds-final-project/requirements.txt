@@ -1,3 +1,5 @@
+# conda install nb_conda
+
 # external requirements
 click
 python-dotenv
