@@ -1,0 +1,26 @@
+# external requirements
+click
+python-dotenv
+jupyter
+jupyterlab
+tqdm
+numpy
+pandas
+matplotlib
+Seaborn
+Bokeh
+holoviews[extras]
+hvplot
+h5py
+joblib
+scikit-learn
+sklearn-pandas
+xgboost
+tensorflow
+keras
+#nltk
+#gensim
+
+# local package
+-e .
+

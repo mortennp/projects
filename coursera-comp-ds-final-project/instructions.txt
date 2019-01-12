@@ -1,0 +1,6 @@
+git clone <repo url> coursera-comp-ds-final-project
+cd coursera-comp-ds-final-project
+pip install -r requirements.txt # Note: also installs local folder as editable Python module
+jupyter labextension install @pyviz/jupyterlab_pyviz
+jupyter lab
+# Open the notebooks and run...
