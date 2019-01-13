@@ -4,6 +4,14 @@ import h5py
 
 _DATASET_KEY = 'dataset_1'
 
+def read_raw(folder):
+    sales = pd.read_csv(os.path.join(folder, 'sales_train.csv.gz'))
+    test = pd.read_csv(os.path.join(folder, 'test.csv.gz'))
+    items = pd.read_csv(os.path.join(folder, 'items.csv'))
+    categories = pd.read_csv(os.path.join(folder, 'item_categories.csv'))
+    shops = pd.read_csv(os.path.join(folder, 'shops.csv'))    
+    return sales, test, items, categories, shops
+
 def save_data(folder, filename, data):
     path = str(os.path.join(folder, filename) + '.h5')
     print('Saving ' + path)
