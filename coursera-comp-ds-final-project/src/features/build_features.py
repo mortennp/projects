@@ -116,14 +116,27 @@ def create_lags(all_data, index_cols, progress_iter, shift_range = [1, 2, 3, 4, 
 
         lagged_data = pd.merge(lagged_data, train_shift, on=index_cols, how='left').fillna(0)
 
-    del train_shift
-
     # List of all lagged features
     fit_cols = [col for col in lagged_data.columns if col[-1] in [str(item) for item in shift_range]]  
     # We will drop these at fitting stage
     to_drop_cols = list(set(list(lagged_data.columns)) - (set(fit_cols)|set(index_cols))) + ['date_block_num'] 
     
     lagged_data = downcast_dtypes(lagged_data)
+    del train_shift
     gc.collect();
     
     return lagged_data, to_drop_cols    
+
+
+def create_mapper(categorical_features, numeric_features):
+    from sklearn.preprocessing import OneHotEncoder, StandardScaler #, SimpleImputer
+    from sklearn.pipeline import Pipeline
+    from sklearn_pandas import DataFrameMapper, gen_features
+
+    categorial_maps = gen_features(
+        columns=[[feature] for feature in categorical_features],
+        classes=[{'class': OneHotEncoder, 'dtype': np.float32, 'sparse':False, 'handle_unknown':'ignore'}])
+    numeric_maps = gen_features(
+        columns=[[feature] for feature in numeric_features],
+        classes=[StandardScaler])
+    return DataFrameMapper(categorial_maps + numeric_maps, default=None)
