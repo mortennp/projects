@@ -1,7 +1,6 @@
 import gc
 import numpy as np
 import pandas as pd
-from itertools import product
 
 from src.features import COLUMNS
 
@@ -9,28 +8,33 @@ def add_super_category(categories):
     super_categories = pd.DataFrame(
         list(enumerate(sorted(list(set(categories.item_category_name.apply(lambda s: s.split(' ')[0])))))),
         columns=['super_category_id', 'super_category_name'])
-    return categories.assign(super_category_name = lambda c: c.item_category_name.apply(lambda s: s.split(' ')[0])).merge(super_categories, on=['super_category_name'], how='left')
+    return downcast_dtypes(
+        categories.assign(super_category_name = lambda c: c.item_category_name.apply(lambda s: s.split(' ')[0]))\
+        .merge(super_categories, on=['super_category_name'], how='left'))        
 
 
 def add_super_shop(shops):
     super_shops = pd.DataFrame(
         list(enumerate(sorted(list(set(shops.shop_name.apply(lambda s: s.split(' ')[0])))))),
         columns=['super_shop_id', 'super_shop_name'])
-    return shops.assign(super_shop_name = lambda c: c.shop_name.apply(lambda s: s.split(' ')[0])).merge(super_shops, on=['super_shop_name'], how='left')
+    return downcast_dtypes(
+        shops.assign(super_shop_name = lambda c: c.shop_name.apply(lambda s: s.split(' ')[0])).\
+        merge(super_shops, on=['super_shop_name'], how='left'))
 
 
 def rollup_and_clip_sales(sales):    
     rolled_up = sales.groupby(COLUMNS.KEYS_AND_TIME).aggregate({'item_cnt_day': 'sum'}).reset_index().sort_values(COLUMNS.KEYS_AND_TIME)
     rolled_up = rolled_up.rename(columns={'item_cnt_day' : 'item_cnt_month'})
     rolled_up.item_cnt_month.clip(0,20, inplace=True)
-    return rolled_up
+    return downcast_dtypes(rolled_up)
 
 
-def enrich_sales(sales, shops, items, categories):
-    return sales.merge(
-        shops, on=['shop_id'], how='left').merge(
-        items, on=['item_id'], how='left').merge(
-        categories, on=['item_category_id'], how='left')
+def enrich(sales, shops, items, categories):
+    return downcast_dtypes(
+        sales.merge(
+            shops, on=['shop_id'], how='left').merge(
+            items, on=['item_id'], how='left').merge(
+            categories, on=['item_category_id'], how='left'))
 
 
 def downcast_dtypes(df):
@@ -52,7 +56,9 @@ def downcast_dtypes(df):
     return df
 
 
-def create_grid(sales, index_cols, progress_iter):   
+def create_grid(sales, shops, items, categories, index_cols, progress_iter): 
+    from itertools import product
+
     # For every month we create a grid from all shops/items combinations from that month
     grid = [] 
     for block_num in progress_iter(sales['date_block_num'].unique()):
@@ -66,28 +72,35 @@ def create_grid(sales, index_cols, progress_iter):
     # Join it to the grid    
     all_data = pd.merge(grid, sales, how='left', on=index_cols).fillna(0)
 
+    # Enrich    
+    all_data = enrich(
+        all_data, 
+        add_super_shop(shops),
+        items,
+        add_super_category(categories)).drop(columns=['shop_name', 'super_shop_name', 'item_name', 'item_category_name', 'super_category_name'])
+
     # Shop-month aggregates
-    gb = sales.groupby(['shop_id', 'date_block_num'],as_index=False).agg({'target':{'target_shop':'sum'}})
+    gb = all_data.groupby(['shop_id', 'date_block_num'],as_index=False).agg({'target':{'target_shop':'sum'}})
     gb.columns = [col[0] if col[-1]=='' else col[-1] for col in gb.columns.values]
     all_data = pd.merge(all_data, gb, how='left', on=['shop_id', 'date_block_num']).fillna(0)
 
     # Super-shop-month aggregates
-    gb = sales.groupby(['super_shop_id', 'date_block_num'],as_index=False).agg({'target':{'target_super_shop':'sum'}})
+    gb = all_data.groupby(['super_shop_id', 'date_block_num'],as_index=False).agg({'target':{'target_super_shop':'sum'}})
     gb.columns = [col[0] if col[-1]=='' else col[-1] for col in gb.columns.values]
     all_data = pd.merge(all_data, gb, how='left', on=['super_shop_id', 'date_block_num']).fillna(0)
 
     # Item-month aggregates
-    gb = sales.groupby(['item_id', 'date_block_num'],as_index=False).agg({'target':{'target_item':'sum'}})
+    gb = all_data.groupby(['item_id', 'date_block_num'],as_index=False).agg({'target':{'target_item':'sum'}})
     gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
     all_data = pd.merge(all_data, gb, how='left', on=['item_id', 'date_block_num']).fillna(0)
 
     # Category-month aggregates
-    gb = sales.groupby(['item_category_id', 'date_block_num'],as_index=False).agg({'target':{'target_category':'sum'}})
+    gb = all_data.groupby(['item_category_id', 'date_block_num'],as_index=False).agg({'target':{'target_category':'sum'}})
     gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
     all_data = pd.merge(all_data, gb, how='left', on=['item_category_id', 'date_block_num']).fillna(0)
 
     # Super-category-month aggregates
-    gb = sales.groupby(['super_category_id', 'date_block_num'],as_index=False).agg({'target':{'target_super_category':'sum'}})
+    gb = all_data.groupby(['super_category_id', 'date_block_num'],as_index=False).agg({'target':{'target_super_category':'sum'}})
     gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
     all_data = pd.merge(all_data, gb, how='left', on=['super_category_id', 'date_block_num']).fillna(0)    
 
@@ -135,7 +148,7 @@ def create_mapper(categorical_features, numeric_features):
 
     categorial_maps = gen_features(
         columns=[[feature] for feature in categorical_features],
-        classes=[{'class': OneHotEncoder, 'dtype': np.float32, 'sparse':False, 'handle_unknown':'ignore'}])
+        classes=[{'class': OneHotEncoder, 'dtype': np.int32, 'sparse':False, 'handle_unknown':'ignore'}])
     numeric_maps = gen_features(
         columns=[[feature] for feature in numeric_features],
         classes=[StandardScaler])
