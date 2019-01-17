@@ -4,10 +4,14 @@
 # sourcde activate comp-ds
 # conda install nb_conda nodejs
 
+pip install --upgrade pip
+
 git clone <repo url> coursera-comp-ds-final-project
 cd coursera-comp-ds-final-project
-# Download all.zip from Kaggle competetion and unzip in data/raw folder
 pip install -r requirements.txt # Note: also installs local folder as editable Python module
+
+# Download all.zip from Kaggle competetion and unzip in data/raw folder
+
 jupyter labextension install @pyviz/jupyterlab_pyviz
 jupyter lab
 # Open the notebooks and run...

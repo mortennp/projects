@@ -1,15 +1,12 @@
 # external requirements
 click
 python-dotenv
-jupyter
-jupyterlab
-tqdm
 numpy
 pandas
 matplotlib
 Seaborn
 Bokeh
-holoviews[extras]
+holoviews
 hvplot
 tables
 h5py
@@ -21,6 +18,10 @@ tensorflow
 keras
 #nltk
 #gensim
+jupyter
+jupyterlab
+tqdm
+
 
 # local package
 -e .
