@@ -3,11 +3,11 @@
 # conda create -n comp-ds python=3.6
 # sourcde activate comp-ds
 # conda install nb_conda nodejs
-
-pip install --upgrade pip
+#pip install --upgrade pip
 
 git clone <repo url> coursera-comp-ds-final-project
 cd coursera-comp-ds-final-project
+
 pip install -r requirements.txt # Note: also installs local folder as editable Python module
 
 # Download all.zip from Kaggle competetion and unzip in data/raw folder
