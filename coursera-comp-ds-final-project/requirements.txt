@@ -6,23 +6,24 @@ pandas
 matplotlib
 Seaborn
 Bokeh
-holoviews
+holoviews[extras]
 hvplot
-tables
+#hdf5
 h5py
+#tables
 joblib
 scikit-learn
 sklearn-pandas
 xgboost
-tensorflow
-keras
+#tensorflow
+#keras
 #nltk
 #gensim
-jupyter
-jupyterlab
+#jupyter
+#jupyterlab
 tqdm
 
 
 # local package
--e .
+#-e . # Done with notebook
 

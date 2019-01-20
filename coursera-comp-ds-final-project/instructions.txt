@@ -15,3 +15,10 @@ pip install -r requirements.txt # Note: also installs local folder as editable P
 jupyter labextension install @pyviz/jupyterlab_pyviz
 jupyter lab
 # Open the notebooks and run...
+
+
+# Build image and start Jupyter Lab in it (substitute your Linux UID for 1001 in the second line):
+docker build -t comp-ds-image .
+docker run -p 8888:8888 -v "$PWD":/home/jovyan/work --user 1001 --group-add users \
+    --name comp-ds-container comp-ds-image start.sh jupyter lab 
+docker exec -i -t --name comp-ds-container pip install -e /home/jovyan/work 

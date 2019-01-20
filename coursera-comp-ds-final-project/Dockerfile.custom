@@ -1,0 +1,68 @@
+FROM ubuntu:xenial-20181218
+
+ARG ARG_PYTHON_VERSION="3.6.8"
+ARG ARG_PYENV_ROOT="/opt/pyenv"
+
+# Basics
+RUN apt-get update && apt-get -yq dist-upgrade \
+ && apt-get install -yq --no-install-recommends \
+    wget \
+    curl \
+    bzip2 \
+    ca-certificates \
+    sudo \
+    locales \
+    fonts-liberation \
+    git \
+ && rm -rf /var/lib/apt/lists/*
+
+# Pyenv
+RUN apt-get update && apt-get -yq dist-upgrade \
+ && apt-get install -yq --no-install-recommends \
+    make \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    llvm \
+    libncurses5-dev \
+    xz-utils \
+    tk-dev \
+    libxml2-dev \
+    libxmlsec1-dev \
+    libffi-dev
+
+RUN git clone https://github.com/pyenv/pyenv.git ${ARG_PYENV_ROOT}
+ENV PYENV_ROOT=${ARG_PYENV_ROOT}
+ENV PATH="${ARG_PYENV_ROOT}/bin:${ARG_PYENV_ROOT}/shims:$PATH" 
+#RUN echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+#RUN echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+#RUN echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n  eval "$(pyenv init -)"\nfi' >> ~/.bash_profile
+#RUN exec "$SHELL"
+#RUN source ~/.bash_profile
+
+# Python 
+RUN pyenv install ${ARG_PYTHON_VERSION}
+RUN pyenv global ${ARG_PYTHON_VERSION}
+
+# Nodejs
+#WORKDIR /opt/node
+ADD https://deb.nodesource.com/setup_11.x /opt/node/nodejs-setup.sh 
+RUN chmod +x /opt/node/nodejs-setup.sh 
+RUN /opt/node/nodejs-setup.sh
+RUN apt-get update && apt-get -yq dist-upgrade \
+ && apt-get install -yq --no-install-recommends \
+    nodejs
+
+# Jupyter and pyviz extension
+RUN pip install jupyter jupyterlab
+RUN jupyter labextension install @pyviz/jupyterlab_pyviz
+
+# Project
+WORKDIR /home/project/deployment
+COPY ./*.* ./
+RUN pip install -r requirements.txt
+EXPOSE 8888
+ENTRYPOINT ["jupyter", "notebook", "--ip", "127.0.0.1", "--port", "8888", "--allow-root", "--no-browser"]
