@@ -14,25 +14,32 @@ def read_raw(folder):
     return sales, test, items, categories, shops
 
 def save_data(folder, filename, data):
-    path = str(os.path.join(folder, filename) + '.h5')
-    print('Saving ' + path)
+    print('Saving ' + filename)
+    path = os.path.join(folder, filename)
     if isinstance(data, pd.DataFrame):
-        data.to_hdf(path, _DATASET_KEY, mode='w')
+        path += '.parquet'
+        data.to_parquet(path, engine='pyarrow')
     elif isinstance(data, np.ndarray):
+        path += '.h5'
         with h5py.File(path, 'w') as f:
             f.create_dataset(_DATASET_KEY, data=data)
     else:
         raise('Not supported')
+    print('Saved ' + path)
+
     
 def load_data(folder, filename, hint):
-    path = str(os.path.join(folder, filename) + '.h5')
-    print('Loading ' + path)
+    print('Loading ' + filename)
+    path = os.path.join(folder, filename) 
     if isinstance(hint, pd.DataFrame):
-        data = pd.read_hdf(path, _DATASET_KEY)
+        path += '.parquet'
+        data = pd.read_parquet(path, engine='pyarrow')
     elif isinstance(hint, np.ndarray):
+        path += '.h5'
         with h5py.File(path,'r') as f:
             data = f[_DATASET_KEY][:]
     else:
         raise('Not supported')
+    print('Loaded ' + path)
         
     return data

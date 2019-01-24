@@ -23,4 +23,7 @@ docker run -p 8888:8888 -v "$PWD":/home/jovyan/work --user 1001 --group-add user
     --name comp-ds-container comp-ds-image start.sh jupyter lab 
 docker exec -i -t comp-ds-container pip install -e /home/jovyan/work 
 
-#RUN [ “/bin/bash”, “-c”, “source activate your-environment && python setup.py develop” ]
+# Kaggle API
+Put your kaggle.json in root of repo clone
+Download files with:
+docker exec -i -t -e KAGGLE_CONFIG_DIR=work comp-ds-container kaggle competitions download -p /home/jovyan/work/data/raw competitive-data-science-predict-future-sales

@@ -14,6 +14,8 @@ RUN conda env update -f /tmp/conda-environment.yml \
  && fix-permissions /home/$NB_USER
 
 # The rest
-RUN conda install -y pytables \
+RUN conda install -y pytables pyarrow tqdm \
  && fix-permissions $CONDA_DIR \
  && fix-permissions /home/$NB_USER
+
+RUN pip install kaggle=='1.5.1'

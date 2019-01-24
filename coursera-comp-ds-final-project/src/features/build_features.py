@@ -144,12 +144,13 @@ def create_lags(all_data, index_cols, progress_iter, shift_range = [1, 2, 3, 4, 
 def create_mapper(categorical_features, numeric_features):
     from sklearn.preprocessing import OneHotEncoder, StandardScaler #, SimpleImputer
     from sklearn.pipeline import Pipeline
-    from sklearn_pandas import DataFrameMapper, gen_features
+    from sklearn.compose import ColumnTransformer
 
-    categorial_maps = gen_features(
-        columns=[[feature] for feature in categorical_features],
-        classes=[{'class': OneHotEncoder, 'dtype': np.int32, 'sparse':False, 'handle_unknown':'ignore'}])
-    numeric_maps = gen_features(
-        columns=[[feature] for feature in numeric_features],
-        classes=[StandardScaler])
-    return DataFrameMapper(categorial_maps + numeric_maps, default=None)
+    return ColumnTransformer(
+        transformers=[
+            ('num', StandardScaler(), numeric_features),
+            ('cat', OneHotEncoder(dtype=np.int32, sparse=False, handle_unknown='error'), categorical_features)
+        ],
+        remainder='passthrough',
+        n_jobs=-1
+    )
