@@ -61,8 +61,9 @@ RUN pip install jupyter jupyterlab
 RUN jupyter labextension install @pyviz/jupyterlab_pyviz
 
 # Project
-WORKDIR /home/project/deployment
-COPY ./*.* ./
-RUN pip install -r requirements.txt
+COPY requirements.txt /tmp/
+RUN pip install --requirement /tmp/requirements.txt 
+
+# Entrypoint
 EXPOSE 8888
 ENTRYPOINT ["jupyter", "notebook", "--ip", "127.0.0.1", "--port", "8888", "--allow-root", "--no-browser"]
