@@ -25,7 +25,7 @@ def add_super_shop(shops):
 def rollup_and_clip_sales(sales):    
     rolled_up = sales.groupby(COLUMNS.KEYS_AND_TIME).aggregate({'item_cnt_day': 'sum'}).reset_index().sort_values(COLUMNS.KEYS_AND_TIME)
     rolled_up = rolled_up.rename(columns={'item_cnt_day' : 'item_cnt_month'})
-    rolled_up.item_cnt_month.clip(0,20, inplace=True)
+    rolled_up.item_cnt_month = rolled_up.item_cnt_month.clip(0,20)
     return downcast_dtypes(rolled_up)
 
 
