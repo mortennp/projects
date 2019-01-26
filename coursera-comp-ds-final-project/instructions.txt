@@ -18,12 +18,16 @@ jupyter lab
 
 
 # Build image and start Jupyter Lab in it (substitute your Linux UID for 1001 in the second line):
-docker build -t comp-ds-image -f conda.Dockerfile .
+docker build -t comp-ds-env-image -f conda.Dockerfile .
+
 docker run -p 8888:8888 -v "$PWD":/home/jovyan/work --user 1001 --group-add users \
-    --name comp-ds-container comp-ds-image start.sh jupyter lab 
-docker exec -i -t comp-ds-container pip install -e /home/jovyan/work 
+    --name comp-ds-env-container comp-ds-env-image start.sh jupyter lab 
+
+docker exec -i -t comp-ds-env-container /bin/bash -c "source activate comp-ds && pip install -e /home/jovyan/work"
 
 # Kaggle API
 Put your kaggle.json in root of repo clone
 Download files with:
-docker exec -i -t -e KAGGLE_CONFIG_DIR=work comp-ds-container kaggle competitions download -p /home/jovyan/work/data/raw competitive-data-science-predict-future-sales
+docker exec -i -t -e KAGGLE_CONFIG_DIR=work comp-ds-env-container /bin/bash -c "source activate comp-ds && kaggle competitions download -p /home/jovyan/work/data/raw competitive-data-science-predict-future-sales"
+
+conda install numpy pandas matplotlib pyarrow pytables h5py joblib scikit-learn xgboost tensorflow keras #bokeh seaborn holoviews

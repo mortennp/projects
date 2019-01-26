@@ -1,4 +1,4 @@
-name: base
+name: comp-ds
 channels:
   - conda-forge
   - defaults
@@ -6,6 +6,7 @@ dependencies:
   - _py-xgboost-mutex=2.0=cpu_0
   - absl-py=0.7.0=py36_1000
   - alembic=0.9.9=py_0
+  - arrow-cpp=0.12.0=py36h0e61e49_0
   - asn1crypto=0.24.0=py36_1003
   - astor=0.7.1=py_0
   - async_generator=1.10=py_0
@@ -15,7 +16,9 @@ dependencies:
   - binutils_linux-64=2.31.1=h6176602_3
   - blas=1.1=openblas
   - bleach=3.0.2=py_1
+  - blosc=1.15.1=hf484d3e_1002
   - bokeh=1.0.4=py36_1000
+  - boost-cpp=1.68.0=h11c811c_1000
   - bzip2=1.0.6=h470a237_2
   - c-ares=1.15.0=h14c3975_1001
   - ca-certificates=2018.11.29=ha4d7672_0
@@ -60,13 +63,6 @@ dependencies:
   - joblib=0.13.1=py_0
   - jpeg=9c=h14c3975_1001
   - jsonschema=3.0.0a3=py36_1000
-  - jupyter=1.0.0=py_1
-  - jupyter_client=5.2.4=py_0
-  - jupyter_console=6.0.0=py_0
-  - jupyter_core=4.4.0=py_0
-  - jupyterhub=0.9.4=py36_1000
-  - jupyterlab=0.35.4=py36_0
-  - jupyterlab_server=0.2.0=py_0
   - keras=2.2.4=py36_0
   - keras-applications=1.0.4=py_1
   - keras-preprocessing=1.0.2=py_1
@@ -90,6 +86,7 @@ dependencies:
   - libxcb=1.13=h14c3975_1002
   - libxgboost=0.81=hf484d3e_1000
   - libxml2=2.9.8=h143f9aa_1005
+  - lzo=2.10=h14c3975_1000
   - mako=1.0.7=py_1
   - markdown=2.6.11=py_0
   - markupsafe=1.1.0=py36h14c3975_1000
@@ -100,7 +97,7 @@ dependencies:
   - nbformat=4.4.0=py_1
   - ncurses=6.1=hfc679d8_2
   - nodejs=8.10.0=0
-  - notebook=5.7.2=py36_1000
+  - numexpr=2.6.9=py36h637b7d7_1000
   - numpy=1.16.0=py36_blas_openblash1522bff_1000
   - olefile=0.46=py_0
   - openblas=0.3.3=h9ac9557_1001
@@ -111,6 +108,7 @@ dependencies:
   - pandoc=2.5=0
   - pandocfilters=1.4.2=py_1
   - param=1.8.1=py_0
+  - parquet-cpp=1.5.1=2
   - parso=0.3.1=py_0
   - patsy=0.5.1=py_0
   - pcre=8.41=hf484d3e_1003
@@ -124,6 +122,7 @@ dependencies:
   - pthread-stubs=0.4=h14c3975_1001
   - ptyprocess=0.6.0=py36_1000
   - py-xgboost=0.81=py36hf484d3e_1000
+  - pyarrow=0.12.0=py36hbbcf98d_0
   - pycosat=0.6.3=py36h14c3975_1001
   - pycparser=2.19=py_0
   - pygments=2.3.1=py_0
@@ -133,6 +132,7 @@ dependencies:
   - pyqt=5.6.0=py36h13b7fb3_1008
   - pyrsistent=0.14.9=py36h14c3975_1000
   - pysocks=1.6.8=py36_1002
+  - pytables=3.4.4=py36h5d69a80_1004
   - python=3.6.7=hd21baee_1001
   - python-dateutil=2.7.5=py_0
   - python-dotenv=0.10.1=py_0
@@ -163,6 +163,7 @@ dependencies:
   - terminado=0.8.1=py36_1001
   - testpath=0.4.2=py36_1000
   - theano=1.0.4=py36hf484d3e_1000
+  - thrift-cpp=0.12.0=h23e226f_1000
   - tini=0.18.0=h470a237_1
   - tk=8.6.9=ha92aebf_0
   - tornado=5.1.1=py36h14c3975_1000
