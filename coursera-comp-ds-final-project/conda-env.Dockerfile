@@ -23,7 +23,3 @@ RUN conda env create -n comp-ds -f /tmp/conda-environment.yml \
 # Install packages with pip (for packages not available through conda)
 RUN [ "/bin/bash", "-c", "source activate comp-ds && pip install kaggle=='1.5.1'" ]
 
-# Register custom env as kernel in base env's Jupyter
-#RUN python -m ipykernel install --user --name=comp-ds --display-name "Python (comp-ds)"
-
-
