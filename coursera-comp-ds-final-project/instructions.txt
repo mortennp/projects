@@ -1,3 +1,7 @@
+Plot IDs of lookups
+Plot features of Train vs index
+
+
 # instal nodejs
 # install Miniconda w/ Python >= 3.6 from https://conda.io/miniconda.html
 # conda create -n comp-ds python=3.6
@@ -18,10 +22,12 @@ jupyter lab
 
 
 # Build image and start Jupyter Lab in it (substitute your Linux UID for 1001 in the second line):
-docker build -t comp-ds-env-image -f conda.Dockerfile .
+docker build -t comp-ds-env-image -f conda-env.Dockerfile .
 
 docker run -p 8888:8888 -v "$PWD":/home/jovyan/work --user 1001 --group-add users \
     --name comp-ds-env-container comp-ds-env-image start.sh jupyter lab 
+
+chown -R 1001 coursera-comp-ds-final-project/
 
 docker exec -i -t comp-ds-env-container /bin/bash -c "source activate comp-ds && pip install -e /home/jovyan/work"
 
