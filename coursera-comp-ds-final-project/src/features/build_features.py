@@ -56,7 +56,7 @@ def downcast_dtypes(df):
     return df
 
 
-def create_grid(sales, shops, items, categories, index_cols, progress_iter): 
+def create_grid(sales, index_cols, progress_iter): 
     from itertools import product
 
     # For every month we create a grid from all shops/items combinations from that month
@@ -67,52 +67,57 @@ def create_grid(sales, shops, items, categories, index_cols, progress_iter):
         grid.append(np.array(list(product(*[[block_num], cur_shops, cur_items])),dtype='int32'))
 
     # Turn the grid into a dataframe
-    grid = pd.DataFrame(np.vstack(grid), columns = index_cols,dtype=np.int32)
+    grid = pd.DataFrame(np.vstack(grid), columns=index_cols, dtype=np.int32)
 
     # Join it to the grid    
-    all_data = pd.merge(grid, sales, how='left', on=index_cols).fillna(0)
+    sales_grid = pd.merge(grid, sales, how='left', on=index_cols).fillna(0)
 
-    # Enrich    
-    all_data = enrich(
-        all_data, 
-        add_super_shop(shops),
-        items,
-        add_super_category(categories)).drop(columns=['shop_name', 'super_shop_name', 'item_name', 'item_category_name', 'super_category_name'])
+    del grid
+    gc.collect()
+    return sales_grid
+
+def mean_encode(enriched):
+    from scipy.stats import iqr
 
     # Shop-month aggregates
-    gb = all_data.groupby(['shop_id', 'date_block_num'],as_index=False).agg({'target':{'target_shop':'sum'}})
+    gb = enriched.groupby(['shop_id', 'date_block_num'],as_index=False).agg(
+        {'target':{'target_shop':'sum', 'median_shop':'median', 'iqr_shop':iqr}})
     gb.columns = [col[0] if col[-1]=='' else col[-1] for col in gb.columns.values]
-    all_data = pd.merge(all_data, gb, how='left', on=['shop_id', 'date_block_num']).fillna(0)
+    enriched = pd.merge(enriched, gb, how='left', on=['shop_id', 'date_block_num']).fillna(0)
 
     # Super-shop-month aggregates
-    gb = all_data.groupby(['super_shop_id', 'date_block_num'],as_index=False).agg({'target':{'target_super_shop':'sum'}})
+    gb = enriched.groupby(['super_shop_id', 'date_block_num'],as_index=False).agg(
+        {'target':{'target_super_shop':'sum', 'median_super_shop':'median', 'iqr_super_shop':iqr}})
     gb.columns = [col[0] if col[-1]=='' else col[-1] for col in gb.columns.values]
-    all_data = pd.merge(all_data, gb, how='left', on=['super_shop_id', 'date_block_num']).fillna(0)
+    enriched = pd.merge(enriched, gb, how='left', on=['super_shop_id', 'date_block_num']).fillna(0)
 
     # Item-month aggregates
-    gb = all_data.groupby(['item_id', 'date_block_num'],as_index=False).agg({'target':{'target_item':'sum'}})
+    gb = enriched.groupby(['item_id', 'date_block_num'],as_index=False).agg(
+        {'target':{'target_item':'sum', 'median_item':'median', 'iqr_item':iqr}})
     gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
-    all_data = pd.merge(all_data, gb, how='left', on=['item_id', 'date_block_num']).fillna(0)
+    enriched = pd.merge(enriched, gb, how='left', on=['item_id', 'date_block_num']).fillna(0)
 
     # Category-month aggregates
-    gb = all_data.groupby(['item_category_id', 'date_block_num'],as_index=False).agg({'target':{'target_category':'sum'}})
+    gb = enriched.groupby(['item_category_id', 'date_block_num'],as_index=False).agg(
+        {'target':{'target_category':'sum', 'median_category':'median', 'iqr_category':iqr}})
     gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
-    all_data = pd.merge(all_data, gb, how='left', on=['item_category_id', 'date_block_num']).fillna(0)
+    enriched = pd.merge(enriched, gb, how='left', on=['item_category_id', 'date_block_num']).fillna(0)
 
     # Super-category-month aggregates
-    gb = all_data.groupby(['super_category_id', 'date_block_num'],as_index=False).agg({'target':{'target_super_category':'sum'}})
+    gb = enriched.groupby(['super_category_id', 'date_block_num'],as_index=False).agg(
+        {'target':{'target_super_category':'sum', 'median_super_category':'median', 'iqr_super_category':iqr}})
     gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
-    all_data = pd.merge(all_data, gb, how='left', on=['super_category_id', 'date_block_num']).fillna(0)    
+    enriched = pd.merge(enriched, gb, how='left', on=['super_category_id', 'date_block_num']).fillna(0)    
 
     # Downcast dtypes from 64 to 32 bit to save memory
-    all_data = downcast_dtypes(all_data)
-    del grid, gb 
+    enriched = downcast_dtypes(enriched)
+    del gb 
     gc.collect();
     
-    return all_data
+    return enriched
 
 
-def create_lags(all_data, index_cols, progress_iter, shift_range = [1, 2, 3, 4, 5, 12]):
+def create_lags(all_data, index_cols, shift_range, progress_iter):
    
     lagged_data = all_data.copy()
     
