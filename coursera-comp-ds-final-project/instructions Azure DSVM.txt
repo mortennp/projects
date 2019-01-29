@@ -1,0 +1,21 @@
+# https://stackoverflow.com/questions/52085973/creating-and-using-a-custom-anaconda-environment-on-azure-dsvm
+
+# git clone repo into /notebooks
+# place your kaggle.json API key in the new clone directory (or change env var below accordingly)
+# cd to the new clone directory
+
+> conda env create -n comp-ds -f conda-environment.yml
+> source activate comp-ds
+> python -m ipykernel install --user --name=comp-ds --display-name "Python (comp-ds)"
+
+> conda uninstall py-xgboost _py-xgboost-mutex tensorflow keras-cpu
+> conda install py-xgboost-gpu tensorflow keras-gpu 
+
+> pip install sklearn-pandas
+> pip install kaggle=='1.5.1'
+> pip install -e .
+
+> KAGGLE_CONFIG_DIR=. kaggle competitions download -p data/raw competitive-data-science-predict-future-sales
+
+# choose "Python (comp-ds)" kernel when opening notebooks with Jupyter 
+

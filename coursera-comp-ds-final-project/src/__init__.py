@@ -1,4 +1,4 @@
-CTX = 'CC-Labs-hv_'
+CTX = 'Keras_DSVM_GPU_IQR_lagcut_'
 SEED = 123
 KAGGLE_COMPETITION = 'competitive-data-science-predict-future-sales'
 
