@@ -4,18 +4,22 @@
 # place your kaggle.json API key in the new clone directory (or change env var below accordingly)
 # cd to the new clone directory
 
+# ### conda yml begin
 > conda env create -n comp-ds -f conda-environment.yml
 > source activate comp-ds
+# ### conda yml begin
+# OR
+# ### conda install begin
+> conda create -n comp-ds python=3.6
+> source activate comp-ds
+> conda install numpy pandas matplotlib bokeh seaborn holoviews pyarrow pytables h5py joblib scikit-learn py-xgboost-gpu keras-gpu 
+# ### conda install end
+
 > python -m ipykernel install --user --name=comp-ds --display-name "Python (comp-ds)"
 
-> conda uninstall py-xgboost _py-xgboost-mutex tensorflow keras-cpu
-> conda install py-xgboost-gpu tensorflow keras-gpu 
-
-> pip install sklearn-pandas
-> pip install kaggle=='1.5.1'
+> pip install sklearn-pandas kaggle=='1.5.1'
 > pip install -e .
 
 > KAGGLE_CONFIG_DIR=. kaggle competitions download -p data/raw competitive-data-science-predict-future-sales
 
-# choose "Python (comp-ds)" kernel when opening notebooks with Jupyter 
-
+# choose "Python (comp-ds)" kernel when opening notebooks with Jupyter
