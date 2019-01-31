@@ -23,8 +23,9 @@ def add_super_shop(shops):
 
 
 def rollup_and_clip_sales(sales):    
-    rolled_up = sales.groupby(COLUMNS.KEYS_AND_TIME).aggregate({'item_cnt_day': 'sum'}).reset_index().sort_values(COLUMNS.KEYS_AND_TIME)
-    rolled_up = rolled_up.rename(columns={'item_cnt_day' : 'item_cnt_month'})
+    rolled_up = sales.groupby(COLUMNS.KEYS_AND_TIME).agg(
+        {'item_cnt_day':{'item_cnt_month':'sum'}}).reset_index().sort_values(COLUMNS.KEYS_AND_TIME) #, 'num_sales_month':'count'
+    rolled_up.columns = [col[0] if col[-1]=='' else col[-1] for col in rolled_up.columns.values]
     rolled_up.item_cnt_month = rolled_up.item_cnt_month.clip(0,20)
     return downcast_dtypes(rolled_up)
 
@@ -76,46 +77,37 @@ def create_grid(sales, index_cols, progress_iter):
     gc.collect()
     return sales_grid
 
-def mean_encode(enriched):
+def mean_encode_target_by_month_and_features(enriched, feature_names):
     from scipy.stats import iqr
-
-    # Shop-month aggregates
-    gb = enriched.groupby(['shop_id', 'date_block_num'],as_index=False).agg(
-        {'target':{'target_shop':'sum', 'median_shop':'median', 'iqr_shop':iqr}})
+    
+    # 'feature_name'/month aggregates
+    gb_keys = list(feature_names) + ['date_block_num']
+    mean_encoded_name = '_'.join(gb_keys[:-1])
+    gb = enriched.groupby(gb_keys, as_index=False).agg({
+        'target':{'mean_target_{}'.format(mean_encoded_name):'mean',
+        'median_target_{}'.format(mean_encoded_name):'median',
+        'iqr_target_{}'.format(mean_encoded_name):iqr,
+        'num_target_{}'.format(mean_encoded_name):'count'}})
     gb.columns = [col[0] if col[-1]=='' else col[-1] for col in gb.columns.values]
-    enriched = pd.merge(enriched, gb, how='left', on=['shop_id', 'date_block_num']).fillna(0)
+    enriched = pd.merge(enriched, gb, how='left', on=gb_keys).fillna(0)
 
-    # Super-shop-month aggregates
-    gb = enriched.groupby(['super_shop_id', 'date_block_num'],as_index=False).agg(
-        {'target':{'target_super_shop':'sum', 'median_super_shop':'median', 'iqr_super_shop':iqr}})
-    gb.columns = [col[0] if col[-1]=='' else col[-1] for col in gb.columns.values]
-    enriched = pd.merge(enriched, gb, how='left', on=['super_shop_id', 'date_block_num']).fillna(0)
-
-    # Item-month aggregates
-    gb = enriched.groupby(['item_id', 'date_block_num'],as_index=False).agg(
-        {'target':{'target_item':'sum', 'median_item':'median', 'iqr_item':iqr}})
-    gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
-    enriched = pd.merge(enriched, gb, how='left', on=['item_id', 'date_block_num']).fillna(0)
-
-    # Category-month aggregates
-    gb = enriched.groupby(['item_category_id', 'date_block_num'],as_index=False).agg(
-        {'target':{'target_category':'sum', 'median_category':'median', 'iqr_category':iqr}})
-    gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
-    enriched = pd.merge(enriched, gb, how='left', on=['item_category_id', 'date_block_num']).fillna(0)
-
-    # Super-category-month aggregates
-    gb = enriched.groupby(['super_category_id', 'date_block_num'],as_index=False).agg(
-        {'target':{'target_super_category':'sum', 'median_super_category':'median', 'iqr_super_category':iqr}})
-    gb.columns = [col[0] if col[-1] == '' else col[-1] for col in gb.columns.values]
-    enriched = pd.merge(enriched, gb, how='left', on=['super_category_id', 'date_block_num']).fillna(0)    
-
-    # Downcast dtypes from 64 to 32 bit to save memory
-    enriched = downcast_dtypes(enriched)
     del gb 
     gc.collect();
-    
     return enriched
 
+
+def mean_encode(enriched):
+     # Feature/month aggregates
+    enriched = mean_encode_target_by_month_and_features(enriched, ['shop_id', 'item_category_id'])
+    #enriched = mean_encode_target_by_month_and_features(enriched, 'shop_id')
+    #enriched = mean_encode_target_by_month_and_features(enriched, 'super_shop_id')
+    #enriched = mean_encode_target_by_month_and_features(enriched, 'item_id')
+    #enriched = mean_encode_target_by_month_and_features(enriched, 'item_category_id')
+    #enriched = mean_encode_target_by_month_and_features(enriched, 'super_category_id')
+
+    # Downcast dtypes from 64 to 32 bit to save memory
+    return downcast_dtypes(enriched)
+    
 
 def create_lags(all_data, index_cols, shift_range, progress_iter):
    
