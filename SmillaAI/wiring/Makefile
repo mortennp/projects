@@ -22,7 +22,9 @@ $(TARGET):
 
 MPU:	
 	$(CC) attitude/MPU6050RAW.cpp attitude/MPU6050.cpp attitude/I2Cdev.cpp -o $(BUILD)$(TARGET) $(local_CFLAGS) $(LFLAGS) $(DISABLED_WARNINGS)	
-	
+
+DHT:
+	$(CC) hygro/DHT.cpp hygro/DHT11.cpp -o $(BUILD)$(TARGET) $(local_CFLAGS) $(LFLAGS) $(DISABLED_WARNINGS)	
 
 clean:
 	rm -f $(BUILD)$(TARGET)
