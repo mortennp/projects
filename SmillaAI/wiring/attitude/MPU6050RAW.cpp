@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <wiringPi.h>
 #include "I2Cdev.h"
 #include "MPU6050.h"
 
@@ -32,6 +33,7 @@ void loop() {
     printf("a/g: %6hd %6hd %6hd   %6hd %6hd %6hd\n",ax,ay,az,gx,gy,gz);
     printf("a/g: %.2f g %.2f g %.2f g   %.2f d/s %.2f d/s %.2f d/s \n",(float)ax/16384,(float)ay/16384,(float)az/16384,
         (float)gx/131,(float)gy/131,(float)gz/131);
+    delay(100);
 }
 
 int main()
