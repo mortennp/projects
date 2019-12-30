@@ -24,10 +24,10 @@ char* getTimeString(void)
 
 int main(void)
 {
-	printf("Starting...");
+	printf("Starting...\n");
 
 	if(wiringPiSetup() == -1){ //when initialize wiring failed,print messageto screen
-		printf("Setup of wiringPi failed!");
+		printf("Setup of wiringPi failed!\n");
 		return 1; 
 	}
 	
