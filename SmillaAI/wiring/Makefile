@@ -5,7 +5,7 @@ BUILD=build/
 CFLAGS = 
 #-D_POSIX_C_SOURCE=199309L
 LFLAGS =  -lwiringPi
-TARGET = MPU
+TARGET = SenseLED
 
 debug:		 local_CFLAGS = -Wconversion -g -O0 -DDEBUG $(CFLAGS)
 release:     local_CFLAGS = -Wconversion -O3 -march=native $(CFLAGS) -DRELEASE

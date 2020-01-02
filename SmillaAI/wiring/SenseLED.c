@@ -9,8 +9,8 @@
 #include <time.h>
 #include <wiringPi.h>
 
-#define ledPin    1  	//define the ledPin
-#define sensorPin 0		//define the sensorPin
+#define LED_PIN    1  	//define the ledPin
+#define SENSOR_PIN 0		//define the sensorPin
 
 char* getTimeString(void)
 {
@@ -22,6 +22,59 @@ char* getTimeString(void)
 	return asctime( timeinfo );
 }
 
+int loop(void)
+{
+	pinMode(LED_PIN, OUTPUT); 
+	pinMode(SENSOR_PIN, INPUT);
+	int i = 0;	
+	int status = LOW;
+	while (1) {		
+		if (digitalRead(SENSOR_PIN) == HIGH){ //if read sensor for high level
+			if (HIGH != status) {
+				digitalWrite(LED_PIN, HIGH);   //led on
+				printf("%s %i: led on...\n", getTimeString(), i++);
+				status = HIGH;
+			}
+		}
+		else {				
+			if (LOW != status)
+			{
+				digitalWrite(LED_PIN, LOW);   //led off
+				printf("%s %i: ...led off\n", getTimeString(), i++);
+				status = LOW;
+			}
+		}
+	}
+
+	return 0;
+}
+
+void handler(void)
+{
+	system("kill -USR1 $(pgrep raspivid)");
+	delay(5000);
+	system("kill -USR1 $(pgrep raspivid)");
+
+	//printf("Capture status: %i\n", system("kill -USR1 $(pgrep raspistill)"));
+	//printf("Sensor status: %i\n", digitalRead(SENSOR_PIN));
+}
+
+int wait_for_event(void)
+{
+	int ec = wiringPiISR(SENSOR_PIN, INT_EDGE_RISING, &handler);
+	if (ec != -0) { 
+		printf("Setup of handler failed!\n");
+		return 1; 
+	}
+
+	while(1) {
+		delay(10000);
+		// printf(".\n");
+	}
+
+	return 0;
+}
+
 int main(void)
 {
 	printf("Starting...\n");
@@ -31,28 +84,7 @@ int main(void)
 		return 1; 
 	}
 	
-	pinMode(ledPin, OUTPUT); 
-	pinMode(sensorPin, INPUT);
-	int i = 0;	
-	int status = LOW;
-	while(1){		
-		if (digitalRead(sensorPin) == HIGH){ //if read sensor for high level
-			if (HIGH != status) {
-				digitalWrite(ledPin, HIGH);   //led on
-				printf("%s %i: led on...\n", getTimeString(), i++);
-				status = HIGH;
-			}
-		}
-		else {				
-			if (LOW != status)
-			{
-				digitalWrite(ledPin, LOW);   //led off
-				printf("%s %i: ...led off\n", getTimeString(), i++);
-				status = LOW;
-			}
-		}
-	}
-
-	return 0;
+	// return loop();
+	return wait_for_event();
 }
 
